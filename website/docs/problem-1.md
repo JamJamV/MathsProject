@@ -1,12 +1,13 @@
 ---
 title: Playing Billiards With Jugs
 id: problem-1
+slug: /
 ---
 
-In the movie Die Hard: With a Vengeance John `(Bruce Willis)` and Zeus `(Samuel Jackson)` are having a little problem with jugs.
+In the movie *Die Hard: With a Vengeance* John (Bruce Willis) and Zeus (Samuel Jackson) are having a little problem with jugs.
 
 > 58:00  
-SIMON `(via a mobile phone)`: I trust you see the message. It `(the bomb)` has a proximity circuit. So please, don't run.  
+SIMON (via a mobile phone): I trust you see the message. It (the bomb) has a proximity circuit. So please, don't run.  
 JOHN: Yeah, I got it. We're not gonna run. How do we turn this thing off?  
 SIMON: On the fountain, there should be 2 jugs, do you see them? A 5 gallon and a 3 gallon. Fill one of the jugs with exactly 4 gallons of water and place it on the scale and the timer will stop. You must be precise, one ounce more or less will result in detonation. If you're still alive in 5 minutes, we'll speak.  
 JOHN: Wait, wait a second. I don't get it. Do you get it?  
