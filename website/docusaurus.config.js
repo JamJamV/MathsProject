@@ -1,5 +1,5 @@
 module.exports = {
-  title: 'My Site',
+  title: 'Mathematical!',
   tagline: 'The tagline of my site',
   url: 'https://your-docusaurus-test-site.com',
   baseUrl: '/',
@@ -10,10 +10,10 @@ module.exports = {
   projectName: 'docusaurus', // Usually your repo name.
   themeConfig: {
     navbar: {
-      title: 'My Site',
+      title: 'Maths!',
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        alt: 'Cat logo',
+        src: 'img/better-logo.svg',
       },
       items: [
         {
