@@ -1,8 +1,7 @@
 ---
-title: Problem
+title: Playing Billiards With Jugs
+id: problem-1
 ---
-
-### Playing Billiards With Jugs
 
 In the movie Die Hard: With a Vengeance John `(Bruce Willis)` and Zeus `(Samuel Jackson)` are having a little problem with jugs.
 
