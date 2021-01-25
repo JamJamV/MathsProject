@@ -1,6 +1,6 @@
 module.exports = {
   title: 'Mathematical!',
-  tagline: 'The tagline of my site',
+  tagline: '2+2=4-1=3 quick mafs',
   url: 'https://your-docusaurus-test-site.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
