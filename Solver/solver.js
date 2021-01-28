@@ -1,13 +1,15 @@
 "use strict";
 
+const { table } = require('console');
 const { default: Decimal } = require('decimal.js');
 const { getMatrixDataTypeDependencies } = require('mathjs');
 let math = require('mathjs')
 
 const config = {
     number: 'BigNumber',
-    precision: 20
+    precision: 500
 };
+const ROUNDING_PRECISION = config.precision - 20;
 math = math.create(math.all, config);
 
 const bignumber = math.bignumber;
@@ -59,7 +61,7 @@ class Point {
     set y(new_val) {
         this._y = bignumber(new_val);
     }
-    normalize(length = bignumber(1)) {
+    normalize(length = bignumber("1")) {
         if (!Decimal.isDecimal(length)) {
             throw "Length needs to be of type: math.bignumber";
         }
@@ -67,6 +69,21 @@ class Point {
         let new_point = new Point(normalise_val(this._x), normalise_val(this._y));
 
         return new_point;
+    }
+    static add(point_1, point_2) {
+        return new Point(math.add(point_1.x, point_2.x), math.add(point_1.y, point_2.y));
+    }
+    static subtract(point_1, point_2) {
+        return new Point(math.subtract(point_1.x, point_2.x), math.subtract(point_1.y, point_2.y));
+    }
+    multiply(value) {
+        if (!Decimal.isDecimal(value)) {
+            throw "value needs to be of type: math.bignumber";
+        }
+        return new Point(math.multiply(this.x, value), math.multiply(this.y, value));
+    }
+    clone() {
+        return new Point(this.x, this.y);
     }
     get angle() {
         let unit_vector = this.normalize();
@@ -244,20 +261,20 @@ class Table {
         this._tile_height = tile_height;
 
         // Cos 30 degrees
-        let cos_constant = math.divide(math.sqrt(3), 2);
+        let cos_constant = math.divide(math.sqrt(bignumber(3)), bignumber(2));
         // Sin 30 degrees
-        let sin_constant = math.divide(1, 2);
+        let sin_constant = math.divide(bignumber(1), bignumber(2));
 
         // How much the top side is shifted to the right by 
         let top_x_shift = math.multiply(this.tile_height, sin_constant);
 
         // Compute bounding height and width values
-        this._actual_height = math.multiply(this.tile_height, sin_constant);
+        this._actual_height = math.multiply(this.tile_height, cos_constant);
         this._actual_width = math.add(this._tile_width, top_x_shift);
 
         this._coordinates = {
             top_left: new Point(top_x_shift, this._actual_height),
-            top_right: new Point(math.add(this.actual_width, top_x_shift), this._actual_height),
+            top_right: new Point(this._actual_width, this._actual_height),
             bottom_left: new Point(bignumber("0"), bignumber("0")),
             bottom_right: new Point(this._tile_width, bignumber("0")),
         }
@@ -265,16 +282,19 @@ class Table {
         let coordinates = this._coordinates;
 
         this._walls = {
-            left: new Wall(this.coordinates.top_left, this.coordinates.bottom_left, DIRECTIONS.straight_right, (x, y) => x < coordinates.top_left.x),
+            left: new Wall(this.coordinates.top_left, this.coordinates.bottom_left, DIRECTIONS.straight_right, (x, y) => math.round(x, Table.ROUNDING_PRECISION) < coordinates.top_left.x),
             right: new Wall(this.coordinates.top_right, this.coordinates.bottom_right, DIRECTIONS.diagonal_up),
             bottom: new Wall(this.coordinates.bottom_left, this.coordinates.bottom_right, DIRECTIONS.diagonal_up),
-            top: new Wall(this.coordinates.top_left, this.coordinates.top_right, DIRECTIONS.diagonal_down, (x, y) => coordinates.top_left.x < x),
+            top: new Wall(this.coordinates.top_left, this.coordinates.top_right, DIRECTIONS.diagonal_down, (x, y) => coordinates.top_left.x < math.round(x, Table.ROUNDING_PRECISION)),
         }
 
         this._possible_reflections_map = new Map();
         this._possible_reflections_map.set(DIRECTIONS.diagonal_up, [this._walls.left, this._walls.top]);
         this._possible_reflections_map.set(DIRECTIONS.diagonal_down, [this._walls.bottom]);
         this._possible_reflections_map.set(DIRECTIONS.straight_right, [this._walls.right]);
+    }
+    static get ROUNDING_PRECISION() {
+        return ROUNDING_PRECISION;
     }
     get_possible_collisions(direction) {
         if (!DIRECTIONS.is_valid(direction)) {
@@ -349,7 +369,7 @@ class Laser {
         this._direction = new_direction;
     }
     number_of_bounces() {
-        return this._path.length;
+        return this._path.length - 1;
     }
     add_point(point) {
         if (!(point instanceof Point)) {
@@ -382,7 +402,8 @@ class Laser {
                     break;
                 }
             }
-            if (!has_collided) {
+            if (has_collided === false) {
+                this.path.push(this.table.coordinates.top_left);
                 return true;
             }
         }
@@ -406,8 +427,8 @@ let result = solve_billards(bignumber(5), bignumber(3), 1000);
 
 let t1 = performance.now()
 
-console.log(t1 - t0);
-console.log(result)
+//console.log(t1 - t0);
+//console.log(result)
 
 for (let point of result) {
     console.log(`[${point.x}, ${point.y}],`)
