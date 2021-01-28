@@ -383,9 +383,10 @@ class Laser {
                 }
             }
             if (!has_collided) {
-                return;
+                return true;
             }
         }
+        return false;
     }
 }
 
