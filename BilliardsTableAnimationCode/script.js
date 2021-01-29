@@ -124,11 +124,11 @@ function keyPressed() {
 /////////////// Input variables ///////////////
 // User Input
 let numCollisions = 100;
-let jugX = 5;
-let jugY = 8;
+let jugX = 25;
+let jugY = 60;
 let windW = 500;
 let windH = 400;
-let fps = 7;
+let fps = 60;
 let padding = 15;
 
 // General variables

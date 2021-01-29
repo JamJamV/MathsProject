@@ -5,9 +5,9 @@
 
 const config = {
     number: 'BigNumber',
-    precision: 30
+    precision: 500
 };
-const ROUNDING_PRECISION = config.precision - 10;
+const ROUNDING_PRECISION = config.precision - 75;
 if (ROUNDING_PRECISION < 0) {
     throw new RangeError("ROUND_PRECISION must bee greater or equal to zero");
 }
@@ -40,6 +40,9 @@ class Point {
 
         this._x = x;
         this._y = y;
+    }
+    map(func) {
+        return new Point(func(this.x), func(this.y));
     }
     get magntitude() {
         return math.sqrt(math.add(math.pow(this._x, "2"), math.pow(this._y, "2")));
@@ -254,7 +257,7 @@ class Table {
         if (!(Decimal.isDecimal(tile_width) && Decimal.isDecimal(tile_height))) {
             throw new TypeError("Values need to be of type: math.bignumber");
         }
-        let range_check = (x) => 0 < x && x != math.Infinity;
+        let range_check = (x) => bignumber(0).lt(x) && x.isFinite();
         if (!(range_check(tile_width) && range_check(tile_height))) {
             throw new RangeError("Values must be greater than 0 and not infinity");
         }
@@ -280,17 +283,23 @@ class Table {
             bottom_left: new Point(bignumber("0"), bignumber("0")),
             bottom_right: new Point(this._tile_width, bignumber("0")),
         }
-
+        
         let coordinates = this._coordinates;
-
+        let round = (val, mode) => bignumber(val.toPrecision(Table.ROUNDING_PRECISION, mode));
+        
         this._walls = {
-            left: new Wall(this.coordinates.top_left, this.coordinates.bottom_left, DIRECTIONS.straight_right, (x, y) => y < coordinates.top_left.y),
+            left: new Wall(this.coordinates.top_left, this.coordinates.bottom_left, DIRECTIONS.straight_right, (x, y) => {
+                return round(x, Decimal.ROUND_UP).lt(coordinates.top_left.x);
+            }),
             right: new Wall(this.coordinates.top_right, this.coordinates.bottom_right, DIRECTIONS.diagonal_up),
             bottom: new Wall(this.coordinates.bottom_left, this.coordinates.bottom_right, DIRECTIONS.diagonal_up),
-            top: new Wall(this.coordinates.top_left, this.coordinates.top_right, DIRECTIONS.diagonal_down, (x, y) => coordinates.top_left.x < x),
+            top: new Wall(this.coordinates.top_left, this.coordinates.top_right, DIRECTIONS.diagonal_down, (x, y) => {
+                return coordinates.top_left.x.lt(round(x, Decimal.ROUND_DOWN));
+            }),
         }
 
         this._possible_reflections_map = new Map();
+        // ORDER MATTERS
         this._possible_reflections_map.set(DIRECTIONS.diagonal_up, [this._walls.left, this._walls.top]);
         this._possible_reflections_map.set(DIRECTIONS.diagonal_down, [this._walls.bottom]);
         this._possible_reflections_map.set(DIRECTIONS.straight_right, [this._walls.right]);
@@ -308,7 +317,7 @@ class Table {
         return this._walls;
     }
     _validate_num(value) {
-        if (Decimal.isDecimal(value) && (0 < value && value != math.Infinity)) {
+        if (Decimal.isDecimal(value) && (bignumber(0).lt(value) && value.isFinite())) {
             return true;
         } else {
             throw new RangeError("Value not in correct bounds");
@@ -417,14 +426,14 @@ function solve_billards(width, length, number_of_bounces) {
     let table = new Table(width, length);
     let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table);
     laser.collide(number_of_bounces);
-
+    /*
     let abe = "[";
     for (let point of laser.path) {
         abe += (`[${point.x}, ${point.y}],`)
     }
     abe += "]";
     console.log(abe);
-
+    */
     return laser.path;
 }
 
