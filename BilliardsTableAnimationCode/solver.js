@@ -5,9 +5,9 @@
 
 const config = {
     number: 'BigNumber',
-    precision: 500
+    precision: 200
 };
-const ROUNDING_PRECISION = config.precision - 75;
+const ROUNDING_PRECISION = config.precision - 50;
 if (ROUNDING_PRECISION < 0) {
     throw new RangeError("ROUND_PRECISION must bee greater or equal to zero");
 }
@@ -283,10 +283,10 @@ class Table {
             bottom_left: new Point(bignumber("0"), bignumber("0")),
             bottom_right: new Point(this._tile_width, bignumber("0")),
         }
-        
+
         let coordinates = this._coordinates;
         let round = (val, mode) => bignumber(val.toPrecision(Table.ROUNDING_PRECISION, mode));
-        
+
         this._walls = {
             left: new Wall(this.coordinates.top_left, this.coordinates.bottom_left, DIRECTIONS.straight_right, (x, y) => {
                 return round(x, Decimal.ROUND_UP).lt(coordinates.top_left.x);
@@ -423,9 +423,12 @@ class Laser {
 }
 
 function solve_billards(width, length, number_of_bounces) {
+    let t0 = performance.now()
+
     let table = new Table(width, length);
     let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table);
     laser.collide(number_of_bounces);
+
     /*
     let abe = "[";
     for (let point of laser.path) {
@@ -434,6 +437,11 @@ function solve_billards(width, length, number_of_bounces) {
     abe += "]";
     console.log(abe);
     */
+
+    let t1 = performance.now()
+
+    console.log(`Solving took: ${(math.round(t1 - t0))} milliseconds`);
+
     return laser.path;
 }
 

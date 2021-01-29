@@ -20,7 +20,7 @@ function drawLaser(colArr, nLoop, c) {
     }
     // Colour and thickness
     stroke(color('#3FBA7D'));
-    strokeWeight(5);
+    strokeWeight(laserStroke);
 
     // Draw Line Laser
     line(colArr[nLoop].x,colArr[nLoop].y,colArr[nLoop+1].x,colArr[nLoop+1].y);
@@ -56,7 +56,7 @@ function findCorners(jugXc, jugYc, h, l) {
 }
 
 function setup() {
-    createCanvas(windW, windH);
+    createCanvas(windowWidth, windowHeight);
     background(color("#232b2b"));
     frameRate(fps);
 }
@@ -123,13 +123,14 @@ function keyPressed() {
 
 /////////////// Input variables ///////////////
 // User Input
-let numCollisions = 100;
-let jugX = 25;
-let jugY = 60;
-let windW = 500;
-let windH = 400;
-let fps = 10;
+let numCollisions = 1000;
+let jugX = 25.002;
+let jugY = 60.335;
+let windW = 1000;
+let windH = 600;
+let fps = 60;
 let padding = 15;
+let laserStroke = 1;
 
 // General variables
 let lenBoard;
