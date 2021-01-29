@@ -1,3 +1,5 @@
+"use strict";
+
 function drawBilliardsBoard(mC) {
     // Colour and thickness
     stroke(color('#e1e1e1'));
@@ -13,7 +15,7 @@ function drawBilliardsBoard(mC) {
 }
 
 function drawLaser(colArr, nLoop, c) {
-    if (nLoop+1 == colArr.length){
+    if (nLoop+1 == colArr.length) {
         return;
     }
     // Colour and thickness
@@ -36,25 +38,6 @@ function drawLaser(colArr, nLoop, c) {
     */
 }
 
-/////////////// Input variables ///////////////
-// User Input
-let numCollisions = 14;
-let jugX = 5;
-let jugY = 3;
-let windW = 500;
-let windH = 400;
-let fps = 7;
-let padding = 15;
-
-// General variables
-let lenBoard;
-let heightBoard;
-let colArr;
-let c;
-let nLoop = 0;
-let changeOccured = true;
-/////////////// Input variables ///////////////
-
 function mapPoints(points, xMax, yMax, pads) {
     let arr = [];
     for (point of points) {
@@ -64,7 +47,7 @@ function mapPoints(points, xMax, yMax, pads) {
 }
 
 function mapOutput(points) {
-    return points.map(function(item) {return {x: item[0], y: item[1]};});
+    return points.map(function(item) {return {x: item.x.toNumber(), y: item.y.toNumber()};});
 }
 
 function findCorners(jugXc, jugYc, h, l) {
@@ -87,23 +70,8 @@ function draw() {
     if (changeOccured) {
         // Run Math Code:
 
-        //let j = solve_billards(bignumber(5), bignumber(3), bignumber(10));
-
-        colArr = mapOutput([[5, 0],
-            [3.5000000000000000001, 2.5980762113533159403],
-            [2.0000000000000000002, 0],
-            [1.0000000000000000001, 1.7320508075688772937],
-            [6, 1.7320508075688772937],
-            [5.5000000000000000005, 2.5980762113533159403],
-            [4.0000000000000000006, 0],
-            [2.5000000000000000006, 2.5980762113533159403],
-            [1.0000000000000000006, 0],
-            [0.50000000000000000029, 0.86602540378443864726],
-            [5.5000000000000000004, 0.86602540378443864726],
-            [4.5000000000000000009, 2.5980762113533159403],
-            [3.000000000000000001, 0],
-            [1.500000000000000001, 2.5980762113533159403]]);
-
+        colArr = mapOutput(solve_billards(bignumber(jugX), bignumber(jugY), bignumber(numCollisions)));
+        
         // Get the rectangle lengths needed to display board
         lenBoard = jugX + Math.sin(Math.PI/6)*(jugY);
         heightBoard = Math.cos(Math.PI/6)*(jugY);
@@ -156,3 +124,22 @@ function keyPressed() {
     nLoop = 0;
     changeOccured = true;
 }
+
+/////////////// Input variables ///////////////
+// User Input
+let numCollisions = 14;
+let jugX = 5;
+let jugY = 6;
+let windW = 500;
+let windH = 400;
+let fps = 7;
+let padding = 15;
+
+// General variables
+let lenBoard;
+let heightBoard;
+let colArr;
+let c;
+let nLoop = 0;
+let changeOccured = true;
+/////////////// Input variables ///////////////

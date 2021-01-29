@@ -1,16 +1,18 @@
 "use strict";
 
-const { table } = require('console');
-const { default: Decimal } = require('decimal.js');
-const { getMatrixDataTypeDependencies } = require('mathjs');
-let math = require('mathjs')
+//const { default: Decimal } = require('decimal.js');
+//let math = require('mathjs')
 
 const config = {
     number: 'BigNumber',
-    precision: 500
+    precision: 30
 };
-const ROUNDING_PRECISION = config.precision - 20;
-math = math.create(math.all, config);
+const ROUNDING_PRECISION = config.precision - 10;
+if (ROUNDING_PRECISION < 0) {
+    throw new RangeError("ROUND_PRECISION must bee greater or equal to zero");
+}
+
+math.config(config);
 
 const bignumber = math.bignumber;
 const matrix = math.matrix;
@@ -282,10 +284,10 @@ class Table {
         let coordinates = this._coordinates;
 
         this._walls = {
-            left: new Wall(this.coordinates.top_left, this.coordinates.bottom_left, DIRECTIONS.straight_right, (x, y) => math.round(x, Table.ROUNDING_PRECISION) < coordinates.top_left.x),
+            left: new Wall(this.coordinates.top_left, this.coordinates.bottom_left, DIRECTIONS.straight_right, (x, y) => y < bignumber(coordinates.top_left.y.toPrecision(Table.ROUNDING_PRECISION, Decimal.ROUND_DOWN))),
             right: new Wall(this.coordinates.top_right, this.coordinates.bottom_right, DIRECTIONS.diagonal_up),
             bottom: new Wall(this.coordinates.bottom_left, this.coordinates.bottom_right, DIRECTIONS.diagonal_up),
-            top: new Wall(this.coordinates.top_left, this.coordinates.top_right, DIRECTIONS.diagonal_down, (x, y) => coordinates.top_left.x < math.round(x, Table.ROUNDING_PRECISION)),
+            top: new Wall(this.coordinates.top_left, this.coordinates.top_right, DIRECTIONS.diagonal_down, (x, y) => bignumber(coordinates.top_left.x.toPrecision(Table.ROUNDING_PRECISION, Decimal.ROUND_UP)) < x),
         }
 
         this._possible_reflections_map = new Map();
@@ -414,27 +416,27 @@ class Laser {
 function solve_billards(width, length, number_of_bounces) {
     let table = new Table(width, length);
     let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table);
-    laser.collide(100);
+    laser.collide(number_of_bounces);
 
     return laser.path;
 }
 
+/*
 const { performance } = require('perf_hooks');
 
 let t0 = performance.now()
 
-let result = solve_billards(bignumber(5), bignumber(3), 1000);
+let result = solve_billards(bignumber(5), bignumber(3), 100);
 
 let t1 = performance.now()
 
-//console.log(t1 - t0);
-//console.log(result)
+console.log(t1 - t0);
+console.log(result)
 
 for (let point of result) {
     console.log(`[${point.x}, ${point.y}],`)
 }
 
-/*
 let line_a = new Linear_equation();
 let line_b = new Linear_equation();
 
