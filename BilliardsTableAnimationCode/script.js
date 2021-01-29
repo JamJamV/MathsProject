@@ -56,16 +56,12 @@ function findCorners(jugXc, jugYc, h, l) {
 }
 
 function setup() {
-    windW = windW;
-    windH = windH;
     createCanvas(windW, windH);
     background(color("#232b2b"));
     frameRate(fps);
 }
 
 function draw() {
-    let mappedCorners;
-
     // If a changed has occured to the drawing, redo the board calculations
     if (changeOccured) {
         // Run Math Code:
@@ -127,9 +123,9 @@ function keyPressed() {
 
 /////////////// Input variables ///////////////
 // User Input
-let numCollisions = 14;
+let numCollisions = 100;
 let jugX = 5;
-let jugY = 6;
+let jugY = 8;
 let windW = 500;
 let windH = 400;
 let fps = 7;
@@ -142,4 +138,5 @@ let colArr;
 let c;
 let nLoop = 0;
 let changeOccured = true;
+let mappedCorners;
 /////////////// Input variables ///////////////

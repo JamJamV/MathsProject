@@ -284,10 +284,10 @@ class Table {
         let coordinates = this._coordinates;
 
         this._walls = {
-            left: new Wall(this.coordinates.top_left, this.coordinates.bottom_left, DIRECTIONS.straight_right, (x, y) => y < bignumber(coordinates.top_left.y.toPrecision(Table.ROUNDING_PRECISION, Decimal.ROUND_DOWN))),
+            left: new Wall(this.coordinates.top_left, this.coordinates.bottom_left, DIRECTIONS.straight_right, (x, y) => y < coordinates.top_left.y),
             right: new Wall(this.coordinates.top_right, this.coordinates.bottom_right, DIRECTIONS.diagonal_up),
             bottom: new Wall(this.coordinates.bottom_left, this.coordinates.bottom_right, DIRECTIONS.diagonal_up),
-            top: new Wall(this.coordinates.top_left, this.coordinates.top_right, DIRECTIONS.diagonal_down, (x, y) => bignumber(coordinates.top_left.x.toPrecision(Table.ROUNDING_PRECISION, Decimal.ROUND_UP)) < x),
+            top: new Wall(this.coordinates.top_left, this.coordinates.top_right, DIRECTIONS.diagonal_down, (x, y) => coordinates.top_left.x < x),
         }
 
         this._possible_reflections_map = new Map();
@@ -418,6 +418,13 @@ function solve_billards(width, length, number_of_bounces) {
     let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table);
     laser.collide(number_of_bounces);
 
+    let abe = "[";
+    for (let point of laser.path) {
+        abe += (`[${point.x}, ${point.y}],`)
+    }
+    abe += "]";
+    console.log(abe);
+
     return laser.path;
 }
 
@@ -432,10 +439,6 @@ let t1 = performance.now()
 
 console.log(t1 - t0);
 console.log(result)
-
-for (let point of result) {
-    console.log(`[${point.x}, ${point.y}],`)
-}
 
 let line_a = new Linear_equation();
 let line_b = new Linear_equation();
