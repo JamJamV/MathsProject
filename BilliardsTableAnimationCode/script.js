@@ -15,7 +15,7 @@ function drawBilliardsBoard(mC) {
 }
 
 function drawLaser(colArr, nLoop, c) {
-    if (nLoop+1 == colArr.length) {
+    if (nLoop+1 >= colArr.length) {
         return;
     }
     // Colour and thickness
@@ -128,7 +128,7 @@ let jugX = 25;
 let jugY = 60;
 let windW = 500;
 let windH = 400;
-let fps = 60;
+let fps = 10;
 let padding = 15;
 
 // General variables
