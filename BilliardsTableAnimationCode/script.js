@@ -112,7 +112,7 @@ function draw() {
         k = math.sin(math.pi.div(6)).mul(jugY);
         
         let table = new Table(bignumber(jugX), bignumber(jugY));
-        let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table);
+        let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table, water_target);
         laser.collide(numCollisions);
         colArr = laser.path;
 
@@ -183,6 +183,7 @@ let numCollisions = 5000;
 let jugX = 5;
 let jugY = 3;
 let fps = 60;
+let water_target = bignumber(4);
 
 let padding = 50;
 let maxStroke = 2;

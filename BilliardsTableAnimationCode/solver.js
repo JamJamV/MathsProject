@@ -100,6 +100,9 @@ class Point {
         this.x = math.multiply(math.cos(new_angle), magnitude);
         this.y = math.multiply(math.sin(new_angle), magnitude);
     }
+    map(func) {
+        return new Point(func(this.x), func(this.y));
+    }
     eq(other_point) {
         return this.x.eq(other_point.x) && this.y.eq(other_point.y);
     }
@@ -348,7 +351,7 @@ class Table {
 }
 
 class Laser {
-    constructor(direction, point, table, target = bignumber(Infinity)) {
+    constructor(direction, point, table, target = bignumber(0)) {
         this.direction = direction;
         this.table = table;
         
@@ -418,7 +421,7 @@ class Laser {
                 let collision_result = wall.collide(this);
                 if (collision_result instanceof Point) {
                     let round = (num) => bignumber(num.toPrecision(Table.ROUNDING_PRECISION));
-                    if (round(collision_result.x).eq(round(this.target)) && round(collision_result.y).eq(bignumber(0))) {
+                    if (collision_result.map(round).eq(new Point(this.target, bignumber(0)))) {
                         if (!(this.path[this.path.length - 1].eq(collision_result))) {
                             this.path.push(collision_result);
                         }
@@ -433,7 +436,9 @@ class Laser {
                 }
             }
             if (has_collided === false) {
-                this.path.push(this.table.coordinates.top_left);
+                if (!(this.path[this.path.length - 1].eq(this.table.coordinates.top_left))) {
+                    this.path.push(this.table.coordinates.top_left);
+                }
                 return true;
             }
         }
@@ -441,7 +446,7 @@ class Laser {
     }
 }
 
-function solve_billards(width, length, number_of_bounces, target = bignumber(Infinity)) {
+function solve_billards(width, length, number_of_bounces, target = bignumber(0)) {
     let t0 = performance.now()
 
     let table = new Table(width, length);
