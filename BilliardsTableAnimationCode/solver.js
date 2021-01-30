@@ -34,7 +34,7 @@ class Point {
             throw new TypeError("Values must be of datatype: math.bignumber");
         }
 
-        if (x == math.Infinity || y == math.Infinity) {
+        if (!(x.isFinite() && y.isFinite())) {
             throw new RangeError("Values can not be infinite");
         }
 
@@ -99,6 +99,9 @@ class Point {
 
         this.x = math.multiply(math.cos(new_angle), magnitude);
         this.y = math.multiply(math.sin(new_angle), magnitude);
+    }
+    eq(other_point) {
+        return this.x.eq(other_point.x) && this.y.eq(other_point.y);
     }
     toString() {
         return `[${this.x}, ${this.y}]`;
@@ -345,12 +348,20 @@ class Table {
 }
 
 class Laser {
-    constructor(direction, point, table) {
+    constructor(direction, point, table, target = bignumber(Infinity)) {
         this.direction = direction;
         this.table = table;
+        
+        if (!(Decimal.isDecimal(target))) {
+            throw new TypeError("Target needs to be of datatype: bignumber");
+        }
 
+        this._target = target;
         this.equation = new Linear_equation().from_gradient_point(this.direction, point);
         this._path = [point];
+    }
+    get target() {
+        return this._target;
     }
     get equation() {
         return this._equation;
@@ -406,6 +417,14 @@ class Laser {
             for (let wall of this.table.get_possible_collisions(this.direction)) {
                 let collision_result = wall.collide(this);
                 if (collision_result instanceof Point) {
+                    let round = (num) => bignumber(num.toPrecision(Table.ROUNDING_PRECISION));
+                    if (round(collision_result.x).eq(round(this.target)) && round(collision_result.y).eq(bignumber(0))) {
+                        if (!(this.path[this.path.length - 1].eq(collision_result))) {
+                            this.path.push(collision_result);
+                        }
+                        return true;
+                    }
+
                     this.direction = wall.reflection_direction;
                     this.add_point(collision_result);
                     this.equation = new Linear_equation().from_gradient_point(this.direction, collision_result);
@@ -422,11 +441,11 @@ class Laser {
     }
 }
 
-function solve_billards(width, length, number_of_bounces) {
+function solve_billards(width, length, number_of_bounces, target = bignumber(Infinity)) {
     let t0 = performance.now()
 
     let table = new Table(width, length);
-    let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table);
+    let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table, target);
     laser.collide(number_of_bounces);
 
     /*

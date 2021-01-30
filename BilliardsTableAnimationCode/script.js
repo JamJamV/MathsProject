@@ -15,7 +15,7 @@ function drawBilliardsBoard(mC) {
 }
 
 function drawLaser(colArr, nLoop, c) {
-    if (nLoop+1 >= colArr.length) {
+    if (nLoop + 1 >= colArr.length) {
         return;
     }
     // Colour and thickness
@@ -23,10 +23,10 @@ function drawLaser(colArr, nLoop, c) {
     strokeWeight(laserStroke);
 
     // Draw Line Laser
-    line(colArr[nLoop].x,colArr[nLoop].y,colArr[nLoop+1].x,colArr[nLoop+1].y);
+    line(colArr[nLoop].x, colArr[nLoop].y, colArr[nLoop + 1].x, colArr[nLoop + 1].y);
 
     // Draw dot a points
-    ellipse(colArr[nLoop+1].x,colArr[nLoop+1].y, 5)
+    ellipse(colArr[nLoop + 1].x, colArr[nLoop + 1].y, 5)
 
     /*
     // Draw Text at literal point *******
@@ -41,18 +41,18 @@ function drawLaser(colArr, nLoop, c) {
 function mapPoints(points, xMax, yMax, pads) {
     let arr = [];
     for (point of points) {
-        arr.push({x:map(point.x, 0, xMax, pads, windW - pads),y:map(Math.abs(point.y-yMax), 0, yMax, pads, windH - pads)});
+        arr.push({ x: map(point.x, 0, xMax, pads, windW - pads), y: map(Math.abs(point.y - yMax), 0, yMax, pads, windH - pads) });
     }
     return arr;
 }
 
 function mapOutput(points) {
-    return points.map(function(item) {return {x: item.x.toNumber(), y: item.y.toNumber()};});
+    return points.map(function (item) { return { x: item.x.toNumber(), y: item.y.toNumber() }; });
 }
 
 function findCorners(jugXc, jugYc, h, l) {
-    let k = Math.sin(Math.PI/6)*jugYc;
-    return  [{x:0,y:0}, {x:k,y:h}, {x:jugXc,y:0}, {x:l,y:h}];
+    let k = Math.sin(Math.PI / 6) * jugYc;
+    return [{ x: 0, y: 0 }, { x: k, y: h }, { x: jugXc, y: 0 }, { x: l, y: h }];
 }
 
 function setup() {
@@ -66,20 +66,20 @@ function draw() {
     if (changeOccured) {
         // Run Math Code:
 
-        colArr = mapOutput(solve_billards(bignumber(jugX), bignumber(jugY), bignumber(numCollisions)));
-        
+        colArr = mapOutput(solve_billards(bignumber(jugX), bignumber(jugY), bignumber(numCollisions), target));
+
         // Get the rectangle lengths needed to display board
-        lenBoard = jugX + Math.sin(Math.PI/6)*(jugY);
-        heightBoard = Math.cos(Math.PI/6)*(jugY);
-        
+        lenBoard = jugX + Math.sin(Math.PI / 6) * (jugY);
+        heightBoard = Math.cos(Math.PI / 6) * (jugY);
+
         // Get corners
-        c = findCorners(jugX,jugY,heightBoard,lenBoard);
+        c = findCorners(jugX, jugY, heightBoard, lenBoard);
 
         // Map the corner points relative to the size of the canvas
         mappedCorners = mapPoints(c, lenBoard, heightBoard, padding);
         // Draw Board
         drawBilliardsBoard(mappedCorners);
-        
+
         changeOccured = false;
     }
 
@@ -123,14 +123,15 @@ function keyPressed() {
 
 /////////////// Input variables ///////////////
 // User Input
-let numCollisions = 1000;
-let jugX = 25.002;
-let jugY = 60.335;
+let numCollisions = 100;
+let jugX = 5;
+let jugY = 3;
 let windW = 1000;
 let windH = 600;
 let fps = 60;
 let padding = 15;
 let laserStroke = 1;
+let target = bignumber(Infinity);
 
 // General variables
 let lenBoard;
