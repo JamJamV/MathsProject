@@ -1,7 +1,5 @@
 "use strict";
 
-//const { map } = require("mathjs");
-
 function drawBilliardsBoard(mC) {
     // Colour and thickness
     stroke(color('#e1e1e1'));
@@ -17,17 +15,16 @@ function drawBilliardsBoard(mC) {
 }
 
 function findCoordinate(point, h) {
-
     if (point.y == 0) {
         // bottom line
         return [point, {x:0,y:20}];
     } else if (point.y == h) {
         // top line
         return [{x: point.x - k, y: jugY}, {x:0,y:-15}];
-    } else if (point.x >= 0 && point.x <= k) {
+    } else if (point.y == table.walls.left.equation.calc(bignumber(point.x)).toNumber()) {
         // left side line
         let ypoint = map(point.y, 0, h, 0, jugY);
-        return [{x: 0, y: ypoint}, {x:-70,y:0}];
+        return [{x: 0, y: ypoint}, {x:-55,y:0}];
     } else {
         // right side line
         let ypoint = map(point.y, 0, h, 0, jugY);
@@ -36,14 +33,16 @@ function findCoordinate(point, h) {
 }
 
 function laserStroke(lenCollisionArr) {
-    return map(lenCollisionArr, 0, numCollisions, maxStroke, 1);
+    let m = maxStroke*(0.99**lenCollisionArr);
+    if (m < minStroke) {return minStroke;}
+    return m;
 }
 
-/*
-function fpsScale(lenCollisionArr) {
-    return map(lenCollisionArr, 0, numCollisions, 1, maxfps);
+function textCordSize(lenCollisionArr) {
+    let m = maxCordTextSize*(0.99**lenCollisionArr);
+    if (m < minStroke) {return minStroke;}
+    return m;
 }
-*/
 
 function drawLaser(colArrMapped, nLoop, colArr, h) {
     if (nLoop+1 >= colArrMapped.length) {
@@ -51,29 +50,35 @@ function drawLaser(colArrMapped, nLoop, colArr, h) {
     }
     // Colour and thickness
     let st = laserStroke(colArrMapped.length);
-    stroke(color('#3FBA7D'));
+    //stroke(color('#3FBA7D'));
+    stroke(color('#ff6961'));
     strokeWeight(st);
 
     // Draw Line Laser
     line(colArrMapped[nLoop].x,colArrMapped[nLoop].y,colArrMapped[nLoop+1].x,colArrMapped[nLoop+1].y);
 
     // Draw dot a points
-    ellipse(colArrMapped[nLoop+1].x,colArrMapped[nLoop+1].y, st);
+    ellipse(colArrMapped[nLoop+1].x,colArrMapped[nLoop+1].y, st*.5);
 
-    if (colArr.length < 4000) {
-        // Get actual points
-        let cords1 = findCoordinate(colArr[nLoop], h);
-        let cords2 = findCoordinate(colArr[nLoop+1], h);
-        let acutalPoint1= cords1[0];
-        let acutalPoint2= cords2[0];
-        let sideOffset1 = cords1[1];
-        let sideOffset2 = cords2[1];
-        // Draw Text at actual point
-        let txt1 = '(' + acutalPoint1.x.toFixed(1) + ',' + acutalPoint1.y.toFixed(1) + ')';
-        let txt2 = '(' + acutalPoint2.x.toFixed(1) + ',' + acutalPoint2.y.toFixed(1) + ')';
+    // Get actual points
+    let cords1 = findCoordinate(colArr[nLoop], h);
+    let cords2 = findCoordinate(colArr[nLoop+1], h);
+    let acutalPoint1= cords1[0];
+    let acutalPoint2= cords2[0];
+    let sideOffset1 = cords1[1];
+    let sideOffset2 = cords2[1];
+    // Draw Text at actual point
+    let txt1 = '(' + acutalPoint1.x.toFixed(1) + ',' + acutalPoint1.y.toFixed(1) + ')';
+    let txt2 = '(' + acutalPoint2.x.toFixed(1) + ',' + acutalPoint2.y.toFixed(1) + ')';
+
+    // Push to an array, for display later
+    actualCordsArr.push(txt1);
+    
+    // Display cords only if selected or small colArr
+    if (colArr.length < 50 || seeCords) {
         noStroke();
-        textSize(map(colArr.length, 0, numCollisions, maxCordTextSize, 6));
-        fill(color('#ff6961'));
+        textSize(textCordSize(colArr.length));
+        fill(color('#e1e1e1'));
 
         text(txt1, colArrMapped[nLoop].x + sideOffset1.x, colArrMapped[nLoop].y + sideOffset1.y);
         text(txt2, colArrMapped[nLoop+1].x + sideOffset2.x, colArrMapped[nLoop+1].y + sideOffset2.y);
@@ -99,7 +104,7 @@ function findCorners(h, l) {
 function setup() {
     //windW = windowWidth;
     //windH = windowHeight;
-    createCanvas(windowWidth, windowHeight);
+    createCanvas(windW, windH);
     background(color("#232b2b"));
     frameRate(fps);
 }
@@ -111,7 +116,7 @@ function draw() {
         
         k = math.sin(math.pi.div(6)).mul(jugY);
         
-        let table = new Table(bignumber(jugX), bignumber(jugY));
+        table = new Table(bignumber(jugX), bignumber(jugY));
         let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table, water_target);
         laser.collide(numCollisions);
         colArr = laser.path;
@@ -163,9 +168,11 @@ function keyPressed() {
     if (keyCode === UP_ARROW) {
         jugY++;
     } else if (keyCode === DOWN_ARROW) {
+        if (jugY == 1) {return;}
         jugY--;
     }
     if (keyCode === LEFT_ARROW) {
+        if (jugX == 1) {return;}
         jugX--;
     } else if (keyCode === RIGHT_ARROW) {
         jugX++;
@@ -179,17 +186,21 @@ function keyPressed() {
 
 /////////////// Input variables ///////////////
 // User Input
-let numCollisions = 5000;
+let numCollisions = 1000;
 let jugX = 5;
 let jugY = 3;
 let fps = 60;
-let water_target = bignumber(4);
+let water_target = bignumber(-1);
+let seeCords = false;
 
 let padding = 50;
-let maxStroke = 2;
+let maxStroke = 9;
+let minStroke = 0.1;
 let windW = 1000;
 let windH = 600;
-let maxCordTextSize = 10;
+let maxCordTextSize = 14.5;
+let actualCordsArr = [];
+
 // General variables
 let lenBoard;
 let heightBoard;
@@ -199,4 +210,5 @@ let nLoop = 0;
 let changeOccured = true;
 let mappedCorners;
 let k;
+let table;
 /////////////// Input variables ///////////////
