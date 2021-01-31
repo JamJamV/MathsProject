@@ -102,8 +102,8 @@ function findCorners(h, l) {
 }
 
 function setup() {
-    //windW = windowWidth;
-    //windH = windowHeight;
+    windW = windowWidth;
+    windH = windowHeight;
     createCanvas(windW, windH);
     background(color("#232b2b"));
     frameRate(fps);
@@ -126,8 +126,6 @@ function draw() {
         });
         // Get the rectangle lengths needed to display board
         // This is the total occupying length of the board.
-        // lenBoard = jugX.add(math.sin(Math.PI/6)*(jugY));
-        // heightBoard = Math.cos(Math.PI/6)*(jugY);
 
         lenBoard = table.actual_width.toNumber();
         heightBoard = table.actual_height.toNumber();
@@ -145,14 +143,14 @@ function draw() {
 
     if (nLoop < numCollisions) {
         // Map the collision points relative to the size of the canvas
-        let mappedCollisions = mapPoints(colArr, lenBoard, heightBoard, padding);
+        mappedCollisions = mapPoints(colArr, lenBoard, heightBoard, padding);
         // Draw laser
         drawLaser(mappedCollisions, nLoop, colArr, heightBoard);
         nLoop++;
     }
 }
 
-/*
+
 function windowResized() {    
     windW = windowWidth;
     windH = windowHeight;
@@ -162,7 +160,7 @@ function windowResized() {
     nLoop = 0;
     changeOccured = true;
 }
-*/
+
 
 function keyPressed() {
     if (keyCode === UP_ARROW) {
@@ -190,7 +188,7 @@ let numCollisions = 1000;
 let jugX = 5;
 let jugY = 3;
 let fps = 60;
-let water_target = bignumber(-1);
+let water_target = bignumber(4);
 let seeCords = false;
 
 let padding = 50;
@@ -211,4 +209,5 @@ let changeOccured = true;
 let mappedCorners;
 let k;
 let table;
+let mappedCollisions;
 /////////////// Input variables ///////////////
