@@ -145,6 +145,9 @@ function draw() {
 
         ///////// Laser Stuff /////////
         laser.collide(numCollisions);
+
+        let t1 = performance.now();
+        console.log(`Solving took: ${(math.round(t1 - t0))} milliseconds`);
         colArr = laser.path;
 
         colArr = colArr.map(function (item) {
