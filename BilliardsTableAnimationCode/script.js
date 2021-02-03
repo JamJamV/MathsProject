@@ -57,8 +57,8 @@ function drawLaser(colArrMapped, nLoop, colArr, h) {
     // Draw Line Laser
     line(colArrMapped[nLoop].x,colArrMapped[nLoop].y,colArrMapped[nLoop+1].x,colArrMapped[nLoop+1].y);
 
-    // Draw dot a points
-    ellipse(colArrMapped[nLoop+1].x,colArrMapped[nLoop+1].y, st*.5);
+    // Dot radius
+    let dotRadius = st*.5
 
     // Get actual points
     let cords1 = findCoordinate(colArr[nLoop], h);
@@ -79,10 +79,19 @@ function drawLaser(colArrMapped, nLoop, colArr, h) {
         noStroke();
         textSize(textCordSize(colArr.length));
         fill(color('#e1e1e1'));
-
         text(txt1, colArrMapped[nLoop].x + sideOffset1.x, colArrMapped[nLoop].y + sideOffset1.y);
+
+        if (nLoop+2 == colArrMapped.length) { fill(color('#42C0FB')); }
         text(txt2, colArrMapped[nLoop+1].x + sideOffset2.x, colArrMapped[nLoop+1].y + sideOffset2.y);
+        
     }
+
+    if (nLoop+2 == colArrMapped.length) {
+        dotRadius = 10;
+        fill(color('#ffffff'));
+    }
+    // Draw dot a points
+    ellipse(colArrMapped[nLoop+1].x,colArrMapped[nLoop+1].y, dotRadius);
 }
 
 function mapPoints(points, xMax, yMax, pads) {
@@ -91,6 +100,10 @@ function mapPoints(points, xMax, yMax, pads) {
         arr.push({x:map(point.x, 0, xMax, pads, windW - pads),y:map(Math.abs(point.y-yMax), 0, yMax, pads, windH - pads)});
     }
     return arr;
+}
+
+function mapPoint(point, xMax, yMax, pads) {
+    return {x:map(point.x, 0, xMax, pads, windW - pads),y:map(Math.abs(point.y-yMax), 0, yMax, pads, windH - pads)};
 }
 
 function mapOutput(points) {
@@ -112,55 +125,67 @@ function setup() {
 function draw() {
     // If a changed has occured to the drawing, redo the board calculations
     if (changeOccured) {
-        // Run Math Code:
-        
+        // Set Up k value
         k = math.sin(math.pi.div(6)).mul(jugY);
-        
+        // Initialise table
         table = new Table(bignumber(jugX), bignumber(jugY));
+        // Initialise laser
         let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table, water_target);
+        
+        // Get table dimentions
+        lenBoard = table.actual_width.toNumber();
+        heightBoard = table.actual_height.toNumber();
+ 
+        // Get corners
+        c = findCorners(heightBoard,lenBoard);
+        // Map the corner points relative to the size of the canvas
+        mappedCorners = mapPoints(c, lenBoard, heightBoard, padding);
+        // Draw Board
+        drawBilliardsBoard(mappedCorners);
+
+        ///////// Laser Stuff /////////
         laser.collide(numCollisions);
         colArr = laser.path;
 
         colArr = colArr.map(function (item) {
             return {x: item.x.toNumber(), y: item.y.toNumber()}
         });
+        ///////// Laser Stuff /////////
+
         // Get the rectangle lengths needed to display board
         // This is the total occupying length of the board.
-
-        lenBoard = table.actual_width.toNumber();
-        heightBoard = table.actual_height.toNumber();
-
-        // Get corners
-        c = findCorners(heightBoard,lenBoard);
-
-        // Map the corner points relative to the size of the canvas
-        mappedCorners = mapPoints(c, lenBoard, heightBoard, padding);
-        // Draw Board
-        drawBilliardsBoard(mappedCorners);
-        
         changeOccured = false;
     }
 
+
+    // while not something have to discuss with will.
     if (nLoop < numCollisions) {
         // Map the collision points relative to the size of the canvas
         mappedCollisions = mapPoints(colArr, lenBoard, heightBoard, padding);
-        // Draw laser
+        // OR mapPoint for a single point 
+
+        // Instead of mappedCollisions, give a two points.
+        // Maybe only have manual line thickness scaling, because lines will need to be redrawn each time a new laser is drawn,
+        // Or have Will give the amount of total collisions, idk if this is possible.
+
         drawLaser(mappedCollisions, nLoop, colArr, heightBoard);
         nLoop++;
     }
 }
 
+function resetBoard() {
+    background(color("#232b2b"));
+    nLoop = 0;
+    changeOccured = true;
+}
 
 function windowResized() {    
     windW = windowWidth;
     windH = windowHeight;
     resizeCanvas(windW, windH);
     // Reset variables
-    background(color("#232b2b"));
-    nLoop = 0;
-    changeOccured = true;
+    resetBoard();
 }
-
 
 function keyPressed() {
     if (keyCode === UP_ARROW) {
@@ -175,16 +200,13 @@ function keyPressed() {
     } else if (keyCode === RIGHT_ARROW) {
         jugX++;
     }
-
     // Reset variables
-    background(color("#232b2b"));
-    nLoop = 0;
-    changeOccured = true;
+    resetBoard();
 }
 
 /////////////// Input variables ///////////////
 // User Input
-let numCollisions = 1000;
+let numCollisions = 5000;
 let jugX = 5;
 let jugY = 3;
 let fps = 60;
