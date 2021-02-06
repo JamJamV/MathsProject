@@ -44,21 +44,13 @@ function textCordSize(lenCollisionArr) {
     return m;
 }
 
-function drawLaser(colArrMapped, nLoop, colArr, h) {
-    if (nLoop+1 >= colArrMapped.length) {
-        return;
-    }
+function drawLaser(colArrMapped, colArr, h) {
     // Colour and thickness
-    let st = laserStroke(colArrMapped.length);
-    //stroke(color('#3FBA7D'));
     stroke(color('#ff6961'));
-    strokeWeight(st);
+    strokeWeight(0.5);
 
     // Draw Line Laser
     line(colArrMapped[nLoop].x,colArrMapped[nLoop].y,colArrMapped[nLoop+1].x,colArrMapped[nLoop+1].y);
-
-    // Dot radius
-    let dotRadius = st*.5
 
     // Get actual points
     let cords1 = findCoordinate(colArr[nLoop], h);
@@ -67,6 +59,7 @@ function drawLaser(colArrMapped, nLoop, colArr, h) {
     let acutalPoint2= cords2[0];
     let sideOffset1 = cords1[1];
     let sideOffset2 = cords2[1];
+
     // Draw Text at actual point
     let txt1 = '(' + acutalPoint1.x.toFixed(1) + ',' + acutalPoint1.y.toFixed(1) + ')';
     let txt2 = '(' + acutalPoint2.x.toFixed(1) + ',' + acutalPoint2.y.toFixed(1) + ')';
@@ -75,23 +68,17 @@ function drawLaser(colArrMapped, nLoop, colArr, h) {
     actualCordsArr.push(txt1);
     
     // Display cords only if selected or small colArr
-    if (colArr.length < 50 || seeCords) {
+    if (seeCords) {
         noStroke();
-        textSize(textCordSize(colArr.length));
+        textSize(10);
         fill(color('#e1e1e1'));
         text(txt1, colArrMapped[nLoop].x + sideOffset1.x, colArrMapped[nLoop].y + sideOffset1.y);
 
         if (nLoop+2 == colArrMapped.length) { fill(color('#42C0FB')); }
         text(txt2, colArrMapped[nLoop+1].x + sideOffset2.x, colArrMapped[nLoop+1].y + sideOffset2.y);
-        
-    }
-
-    if (nLoop+2 == colArrMapped.length) {
-        dotRadius = 10;
-        fill(color('#ffffff'));
     }
     // Draw dot a points
-    ellipse(colArrMapped[nLoop+1].x,colArrMapped[nLoop+1].y, dotRadius);
+    ellipse(colArrMapped[nLoop+1].x,colArrMapped[nLoop+1].y, 0.5);
 }
 
 function mapPoints(points, xMax, yMax, pads) {
@@ -124,14 +111,15 @@ function setup() {
 
 function draw() {
     // If a changed has occured to the drawing, redo the board calculations
+    
     if (changeOccured) {
         // Set Up k value
         k = math.sin(math.pi.div(6)).mul(jugY);
         // Initialise table
         table = new Table(bignumber(jugX), bignumber(jugY));
+
         // Initialise laser
-        let laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table, water_target);
-        
+        laser = new Laser(DIRECTIONS.diagonal_up, table.coordinates.bottom_right, table, water_target);
         // Get table dimentions
         lenBoard = table.actual_width.toNumber();
         heightBoard = table.actual_height.toNumber();
@@ -140,43 +128,51 @@ function draw() {
         c = findCorners(heightBoard,lenBoard);
         // Map the corner points relative to the size of the canvas
         mappedCorners = mapPoints(c, lenBoard, heightBoard, padding);
+
+        // Draw cords for corners
+        if (!seeCords) {
+            for (let i = 0; i < 4; i++) {
+                noStroke();
+                textSize(10);
+                fill(color('#e1e1e1'));
+                
+                let cords1 = findCoordinate(c[i], heightBoard);
+                let acutalPoint1 = cords1[0];
+                let sideOffset1 = cords1[1];
+                let txt1 = '(' + acutalPoint1.x.toFixed(1) + ',' + acutalPoint1.y.toFixed(1) + ')';
+                text(txt1, mappedCorners[i].x + sideOffset1.x, mappedCorners[i].y + sideOffset1.y);
+            }
+        }
         // Draw Board
         drawBilliardsBoard(mappedCorners);
-
-        ///////// Laser Stuff /////////
-        laser.collide(numCollisions);
-        colArr = laser.path;
-
-        colArr = colArr.map(function (item) {
-            return {x: item.x.toNumber(), y: item.y.toNumber()}
-        });
-        ///////// Laser Stuff /////////
-
-        // Get the rectangle lengths needed to display board
-        // This is the total occupying length of the board.
         changeOccured = false;
     }
 
+    let laserStoped = laser.collide(numCollisions);
 
-    // while not something have to discuss with will.
-    if (nLoop < numCollisions) {
-        // Map the collision points relative to the size of the canvas
-        mappedCollisions = mapPoints(colArr, lenBoard, heightBoard, padding);
-        // OR mapPoint for a single point 
+    if (laserStoped) {
+        noLoop();
+    }
 
-        // Instead of mappedCollisions, give a two points.
-        // Maybe only have manual line thickness scaling, because lines will need to be redrawn each time a new laser is drawn,
-        // Or have Will give the amount of total collisions, idk if this is possible.
+    colArr = laser.path;
 
-        drawLaser(mappedCollisions, nLoop, colArr, heightBoard);
+    colArr = colArr.map(function (item) {
+        return {x: item.x.toNumber(), y: item.y.toNumber()}
+    });
+    // Map the collision points relative to the size of the canvas
+    mappedCollisions = mapPoints(colArr, lenBoard, heightBoard, padding);
+    
+    while (nLoop < mappedCollisions.length - 1) {
+        drawLaser(mappedCollisions, colArr, heightBoard);
         nLoop++;
     }
 }
 
 function resetBoard() {
     background(color("#232b2b"));
-    nLoop = 0;
     changeOccured = true;
+    nLoop = 0;
+    loop();
 }
 
 function windowResized() {    
@@ -186,6 +182,25 @@ function windowResized() {
     // Reset variables
     resetBoard();
 }
+
+
+function holdit( btn, method, start, speedup ) {
+    var t, keep = start;
+    var repeat = function () {
+        var args = Array.prototype.slice.call( arguments );
+        method.apply( this, args );
+        t = setTimeout( repeat, start, args[0], args[1], args[2], args[3], args[4], args[5] );
+        if ( start > keep / 20 ) start = start / speedup;
+    }
+    btn.onmousedown = btn.mousedown = repeat;
+    //
+    btn.onmouseout = btn.mouseout = btn.onmouseup = btn.mouseup = function () {
+        clearTimeout( t );
+        start = keep;
+    }
+};
+
+
 
 function keyPressed() {
     if (keyCode === UP_ARROW) {
@@ -206,14 +221,14 @@ function keyPressed() {
 
 /////////////// Input variables ///////////////
 // User Input
-let numCollisions = 5000;
+let numCollisions = 2;
 let jugX = 5;
 let jugY = 3;
-let fps = 60;
+let fps = 120;
 let water_target = bignumber(4);
 let seeCords = false;
 
-let padding = 50;
+let padding = 70;
 let maxStroke = 9;
 let minStroke = 0.1;
 let windW = 1000;
@@ -226,10 +241,11 @@ let lenBoard;
 let heightBoard;
 let colArr;
 let c;
-let nLoop = 0;
 let changeOccured = true;
 let mappedCorners;
 let k;
 let table;
 let mappedCollisions;
+let laser;
+let nLoop=0;
 /////////////// Input variables ///////////////

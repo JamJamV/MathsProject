@@ -1,3 +1,5 @@
+// Look at Burkards video on youtube about spiral counting
+
 var n = 0;
 var c = 5;
 
@@ -7,7 +9,7 @@ function setup() {
 }
 
 function draw() {
-    var a = n * 137.5;
+    var a = n * 134.5;
     var r = c * Math.sqrt(n);
 
     var x = r * Math.cos(a) + width/2; 
